@@ -9,7 +9,8 @@ import Axios from "../../../services/axios";
 import { MdOutlineCheckCircleOutline } from "react-icons/md";
 import { setAccessCardId } from "../../../features/VisitorSlice";
 import { setVisitorType } from "../../../features/VisitorSlice";
-import {AccessCardSelect} from "../../../components";
+
+import { AccessCardSelect } from "../../../components";
 
 const EmployeeForm = () => {
   const [formData, setFormData] = useState({
@@ -24,9 +25,10 @@ const EmployeeForm = () => {
   const Access = useAccessCard();
   const navigate = useNavigate();
 
-  const selector = useAppSelector((state) => state.media.userData);
+  const selector = useAppSelector((state) => state.media);
   const visitorTypeData = useAppSelector((state) => state.visitor);
   const userData = useAppSelector((state) => state.auth);
+  console.log(selector, "this is media data->");
   const dispatch = useAppDispatch();
 
   const [errors, setErrors] = useState({});
@@ -40,7 +42,6 @@ const EmployeeForm = () => {
   useEffect(() => {
     Access.getAccessCard();
   }, []);
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,7 +58,7 @@ const EmployeeForm = () => {
     if (!formData.phoneNo.trim() || !/^\d{10}$/.test(formData.phoneNo.trim())) {
       newErrors.phoneNo = "Please enter a valid 10-digit phone number";
     }
-    if (!formData.tempAccessCard.trim() ) {
+    if (!formData.tempAccessCard.trim()) {
       newErrors.tempAccessCard = "Temp Access Card not selected";
     }
 
@@ -85,7 +86,6 @@ const EmployeeForm = () => {
     } catch (error) {
       console.log(error, "something went wrong while logging in");
     }
-
   };
 
   return (
@@ -133,7 +133,7 @@ const EmployeeForm = () => {
               />
               {errors.phoneNo && <p className=" text-sm text-red-500">{errors.phoneNo}</p>}
             </div>
-            
+
             {/* Use AccessCardSelect component here */}
             <AccessCardSelect
               value={formData.tempAccessCard}

@@ -6,6 +6,8 @@ const initialState = {
     userPhoto: null,
     userSignature: null,
   },
+  nidType: "",
+  nationalId: null,
 };
 
 // Create the slice
@@ -17,6 +19,15 @@ const userMediaSlice = createSlice({
       state.userData.userPhoto = action.payload.profilePhoto;
       state.userData.userSignature = action.payload.signature;
     },
+    setUserNidData: (state, action) => {
+      state.nidType = action.payload.nidType;
+      state.nationalId = action.payload.nidImageRaw;
+    },
+    // setNational_Id: (state, action) => {
+    //   console.log(action.payload,'this is paylodf--->')
+    //   state.userNidData.national_id = action.payload.nidImage;
+    // },
+
     clearUserMedia: (state) => {
       state.userData = {
         userPhoto: null,
@@ -27,5 +38,5 @@ const userMediaSlice = createSlice({
 });
 
 // Export actions and reducer
-export const { setUserData, clearUserMedia } = userMediaSlice.actions;
+export const { setUserData, setUserNidData, clearUserMedia } = userMediaSlice.actions;
 export default userMediaSlice.reducer;

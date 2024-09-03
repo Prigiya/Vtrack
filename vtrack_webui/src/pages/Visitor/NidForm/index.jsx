@@ -6,7 +6,7 @@ import { API } from "../../../constants";
 import { MdOutlineCheckCircleOutline } from "react-icons/md";
 import { NextButton } from "../../../components";
 import { FiRepeat } from "react-icons/fi";
-import useWarnIfUnsavedChanges from "../../../hooks/useWarnIfUnsavedChanges";
+import { setUserNidData } from "../../../features/userMediaSlice";
 
 const NidForm = () => {
   const [nidType, setNIDType] = useState("");
@@ -21,8 +21,6 @@ const NidForm = () => {
   const dispatch = useAppDispatch();
   const nidTypes = useNidtypes();
   const userData = useAppSelector((state) => state.auth);
-  const handleUserNavigation = useWarnIfUnsavedChanges(isFormDirty, API.V1.ACCESS_CARD);
-
 
   useEffect(() => {
     nidTypes.getNidtypes();
@@ -30,10 +28,11 @@ const NidForm = () => {
 
   // Ensure form is marked dirty when the user selects an NID type or uploads/captures an image
   useEffect(() => {
-    if (nidType || nidImage) {
+    if (nidType) {
+
       setIsFormDirty(true);
     }
-  }, [nidType, nidImage]);
+  }, [nidType]);
 
   useEffect(() => {
     console.log("Form Dirty State:", isFormDirty);
@@ -72,6 +71,7 @@ const NidForm = () => {
       setNidImage(dataURL);
       const nationalId_raw = removeImageDataPrefix(dataURL);
       setNidImageRaw(nationalId_raw);
+
       setIsFormDirty(true);
 
       const stream = video.srcObject;
@@ -101,8 +101,11 @@ const NidForm = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("nid_type", nidType);
+    formData.append("nid_type", nidType); 
     formData.append("national_id", nidImageRaw);
+    dispatch(setUserNidData({ nidType, nidImageRaw }));
+
+    console.log(nidType, "this is nid_type");
 
     const config = {
       headers: {

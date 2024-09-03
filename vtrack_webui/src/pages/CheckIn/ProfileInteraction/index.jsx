@@ -7,7 +7,6 @@ import { API, Browser } from "../../../constants";
 import { CancelButton } from "../../../components";
 import { useNavigate } from "react-router-dom";
 import Axios from "../../../services/axios";
-import useWarnIfUnsavedChanges from "../../../hooks/useWarnIfUnsavedChanges";
 
 const PageInteraction = () => {
   const [profilePhoto, setProfilePhoto] = useState(null);
@@ -23,7 +22,6 @@ const PageInteraction = () => {
   const userData = useAppSelector((state) => state.auth);
 
   // Ensure the custom hook is aware of isFormDirty state
-  const handleUserNavigation = useWarnIfUnsavedChanges(isFormDirty, API.V1.ACCESS_CARD);
 
   const videoRef = useRef(null);
   const signatureRef = useRef(null);
@@ -223,7 +221,7 @@ const PageInteraction = () => {
         )}
 
         <div className="flex w-full gap-x-5">
-          <CancelButton handleUserNavigation={handleUserNavigation} />
+          <CancelButton />
           <button
             className={`bg-green-500 ${
               profilePhoto != null && signature != null ? "hover:bg-green-700 bg-green-600 cursor-pointer" : ""

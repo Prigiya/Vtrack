@@ -5,13 +5,12 @@ import { API, LOCAL_STORAGE_KEY } from "../../constants";
 import Axios from "../../services/axios";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../../hooks/index";
-import { setLoggedIn } from "../../features/authSlice";
+import { setEmailAddress, setLoggedIn } from "../../features/authSlice";
 import { setVisitorType } from "../../features/VisitorSlice";
 import { useSelector } from "react-redux";
 import { NextButton, StepProgressBar } from "../../components";
 import { MdOutlineCheckCircleOutline } from "react-icons/md";
 import { toast } from "react-toastify";
-import useWarnIfUnsavedChanges from "../../hooks/useWarnIfUnsavedChanges";
 
 const CheckIn = () => {
   const [email, setEmail] = useState("");
@@ -27,11 +26,13 @@ const CheckIn = () => {
   const dispatch = useAppDispatch();
   const userData = useAppSelector((state) => state.auth);
   const visitorTypeData = useSelector((state) => state.visitor);
-  const handleUserNavigation = useWarnIfUnsavedChanges(isFormDirty, API.V1.ACCESS_CARD);
 
   const handleEmailChange = (e) => {
     const input = e.target.value.trim(); // Trim whitespace
     setEmail(input);
+    console.log("this is email address", input);
+    dispatch(setEmailAddress({ emailAddress: input }));
+
     setIsFormDirty(true);
 
     // Simple email validation (replace with a more robust solution if needed)

@@ -3,13 +3,11 @@ import { Link } from "react-router-dom";
 import "../../assets/main.css";
 import { useAppDispatch } from "../../hooks";
 import { setVisitorType } from "../../features/VisitorSlice";
-import useWarnIfUnsavedChanges from "../../hooks/useWarnIfUnsavedChanges"; // Import the hook
 import { API } from "../../constants";
 
 const Visitors = () => {
   const dispatch = useAppDispatch();
   const [isFormDirty, setIsFormDirty] = useState(false); // State to track if the form is dirty
-  const handleUserNavigation = useWarnIfUnsavedChanges(isFormDirty, API.V1.ACCESS_CARD); // Use the hook
 
   const handleVisitorType = (visitorType) => {
     setIsFormDirty(true); // Set the form as dirty when a visitor type is selected
@@ -30,7 +28,7 @@ const Visitors = () => {
             to="/visitor/employee"
             onClick={() => {
               handleVisitorType(1);
-              handleUserNavigation(); // Call handleUserNavigation when a visitor type is selected
+               // Call  when a visitor type is selected
             }}
             className="md:h-16 h-12 md:text-2xl  text-xl items-center border border-black text-black hover:bg-gray-200  font-bold py-2 px-4 rounded flex justify-between hover:shadow-lg transition duration-300 ease-in-out"
           >
@@ -41,7 +39,7 @@ const Visitors = () => {
             to="/visitor/appointment-visitor"
             onClick={() => {
               handleVisitorType(2);
-              handleUserNavigation();
+              
             }}
             className="md:h-16 md:text-2xl h-12 text-xl items-center border border-black text-black hover:bg-gray-200  font-bold py-2 px-4 rounded flex justify-between hover:shadow-lg transition duration-300 ease-in-out"
           >
@@ -52,7 +50,7 @@ const Visitors = () => {
             to="/visitor/appointment-visitor"
             onClick={() => {
               handleVisitorType(3);
-              handleUserNavigation();
+              
             }}
             className="md:h-16 h-12 text-xl md:text-2xl items-center border border-black text-black hover:bg-gray-200  font-bold py-2 px-4 rounded flex justify-between hover:shadow-lg transition duration-300 ease-in-out"
           >
@@ -63,7 +61,7 @@ const Visitors = () => {
             to="/visitor/appointment-visitor"
             onClick={() => {
               handleVisitorType(4);
-              handleUserNavigation();
+              
             }}
             className="md:h-16 md:text-2xl h-12 text-xl items-center border border-black text-black hover:bg-gray-200  font-bold py-2 px-4 rounded flex justify-between hover:shadow-lg transition duration-300 ease-in-out"
           >
@@ -74,7 +72,7 @@ const Visitors = () => {
             to="/service-provider"
             onClick={() => {
               handleVisitorType(5);
-              handleUserNavigation();
+              
             }}
             className="md:h-16 md:text-2xl h-12 text-xl items-center border border-black text-black hover:bg-gray-200  font-bold py-2 px-4 rounded flex justify-between hover:shadow-lg transition duration-300 ease-in-out"
           >
@@ -85,7 +83,7 @@ const Visitors = () => {
             to="/visitor/appointment-visitor"
             onClick={() => {
               handleVisitorType(6);
-              handleUserNavigation();
+              
             }}
             className="md:h-16 md:text-2xl h-12 text-xl items-center border border-black text-black hover:bg-gray-200  font-bold py-2 px-4 rounded flex justify-between hover:shadow-lg transition duration-300 ease-in-out"
           >
@@ -96,7 +94,7 @@ const Visitors = () => {
             to="/visitor/appointment-visitor"
             onClick={() => {
               handleVisitorType(7);
-              handleUserNavigation();
+              
             }}
             className="md:h-16 md:text-2xl h-12 text-xl items-center border border-black text-black hover:bg-gray-200  font-bold py-2 px-4 rounded flex justify-between hover:shadow-lg transition duration-300 ease-in-out"
           >

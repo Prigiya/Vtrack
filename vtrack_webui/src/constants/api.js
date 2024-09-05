@@ -9,7 +9,7 @@ const API = {
     NID_TYPES: "/v1/visitor/nid-types/",
     VISIT_CATEGORIES: "/v1/visitor/purpose-of-visits/",
     VISITOR_DETAILS: "/v1/visitor/visitor-details/",
-    VISITOR_VALIDS: "/v1/visitor/valids/",
+    VISITOR_VALIDS: "/v1/visitor/validotpsend/",
     VISITOR_APPROVALS:"/v1/visitor/approvals/",
     HOST_DETAILS: "/v1/visitor/hosts/",
     TIMING_DETAILS: "/v1/visitor/timings/",

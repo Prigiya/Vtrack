@@ -13,6 +13,7 @@ from visitor.views import (
     TimingViewSet,
     VisitorDetailViewSet,
     ValidViewSet,
+    ValidOtpViewSet,
     AuditVisitorView
 )
 
@@ -26,6 +27,7 @@ router.register(r"hosts", HostViewSet, basename="host")
 router.register(r"nid-types", NIDTypeViewSet, basename="nid-type")
 router.register(r"timings", TimingViewSet, basename="timing")
 router.register(r"valids", ValidViewSet, basename="timing")
+router.register(r"validotpsend", ValidOtpViewSet, basename="valid-otp")
 router.register(r"visitor-details", VisitorDetailViewSet, basename="visitor-detail")
 router.register(r"purpose-of-visits", PurposeOfVisitViewSet,
                 basename="purpose-of-visit")

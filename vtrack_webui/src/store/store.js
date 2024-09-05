@@ -8,7 +8,7 @@ import { combineReducers } from "redux";
 // import userMediaSlice from "../features/userMediaSlice";
 // import VisitorSlice from "../features/VisitorSlice";
 // import { resetSlice } from "../features";
-import { authSlice, userMediaSlice, VisitorSlice, resetSlice } from "../features";
+import { authSlice, userMediaSlice, VisitorSlice, resetSlice, validSlice } from "../features";
 
 const persistConfig = {
   key: "root",
@@ -19,6 +19,7 @@ const rootReducer = combineReducers({
   auth: authSlice,
   media: userMediaSlice,
   visitor: VisitorSlice,
+  valid: validSlice,
   reset: resetSlice, // Include the reset slice in the root reducer
 });
 

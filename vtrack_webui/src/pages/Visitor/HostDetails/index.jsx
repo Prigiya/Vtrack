@@ -1,5 +1,3 @@
-// src/components/HostDetailsForm.js
-
 import React, { useState } from "react";
 import Axios from "../../../services/axios";
 import { API, Browser } from "../../../constants";
@@ -20,11 +18,9 @@ const HostDetailsForm = () => {
 
   const dispatch = useAppDispatch();
   const userData = useAppSelector((state) => state.auth);
+  const mediaData = useAppSelector((state) => state.media);
   const visitorData = useAppSelector((state) => state.visitor);
-  console.log(visitorData,'this is visitordata--->')
   const [isLoading, setIsLoading] = useState(false);
-  console.log(visitorData, "this is visitor Data-->");
-  console.log(userData, "this is userData--->");
   const [errors, setErrors] = useState({});
 
   const { name, email, phone } = formData;
@@ -82,6 +78,7 @@ const HostDetailsForm = () => {
     // If there are errors, update the state and prevent form submission
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      setIsLoading(false);
       return;
     }
 
@@ -92,32 +89,56 @@ const HostDetailsForm = () => {
     };
 
     try {
-      const response = await Axios.post(API.V1.HOST_DETAILS, payload);
-      const data = await response.data;
-      if (response.status === 201) {
-        dispatch(setHostDetails({ hostName: formData.name }));
-        const approvalPayload = {
-          access_card: visitorData?.AccessCardId,
-          purpose_of_visit: visitorData?.CategoryId,
-          visitor: userData.userId,
-          host: data.id,
+      // Step 1: Make POST API call with email to visitor-details
+      const visitorPostResponse = await Axios.post(API.V1.VISITOR_DETAILS, userData.emailAddress);
+      if (visitorPostResponse.status === 201) {
+        // Step 2: Make PATCH API call with updated payload (You can define the payload here)
+        const patchPayload = {
+          // Define your payload here, e.g.,
+          photo: mediaData.userData.userPhoto,
+          signature: mediaData.userSignature.userSignature,
+          national_id: mediaData.nationalId,
+          name: visitorData.visitorData.visitorName,
+          phone: visitorData.visitorData.visitorPhone,
+          // company: visitorPostResponse.data.company,
+          purposeOfVisit:visitorData.visitorData.purposeOfVisit,
+          nid_type: mediaData.nidType,
         };
 
-        const responseApproval = await Axios.post(API.V1.VISITOR_APPROVALS, approvalPayload);
-        if (responseApproval.status === 201) {
-          dispatch(setApprovalId({ approvalId: response.data.id }));
-          dispatch(setLoggedIn({ isApproved: true }));
+        const visitorPatchResponse = await Axios.patch(
+          `${API.V1.VISITOR_DETAILS}/${visitorPostResponse.data.id}`,
+          patchPayload
+        );
+        if (visitorPatchResponse.status === 200) {
+          // Step 3: Continue with the existing API flow if the PATCH is successful
+          const response = await Axios.post(API.V1.HOST_DETAILS, payload);
+          const data = await response.data;
+          if (response.status === 201) {
+            dispatch(setHostDetails({ hostName: formData.name }));
+            const approvalPayload = {
+              access_card: visitorData?.AccessCardId,
+              purpose_of_visit: visitorData?.CategoryId,
+              visitor: userData.userId,
+              host: data.id,
+            };
 
-          const currentDate = new Date();
-          const isoTimestamp = currentDate.toISOString();
+            const responseApproval = await Axios.post(API.V1.VISITOR_APPROVALS, approvalPayload);
+            if (responseApproval.status === 201) {
+              dispatch(setApprovalId({ approvalId: responseApproval.data.id }));
+              dispatch(setLoggedIn({ isApproved: true }));
 
-          const timingPayload = {
-            approval: responseApproval.data.id,
-            check_in: isoTimestamp,
-          };
-          const responseTiming = await Axios.post(API.V1.TIMING_DETAILS, timingPayload);
-          if (responseTiming.status === 201) {
-            navigate(Browser.THANKYOU);
+              const currentDate = new Date();
+              const isoTimestamp = currentDate.toISOString();
+
+              const timingPayload = {
+                approval: responseApproval.data.id,
+                check_in: isoTimestamp,
+              };
+              const responseTiming = await Axios.post(API.V1.TIMING_DETAILS, timingPayload);
+              if (responseTiming.status === 201) {
+                navigate(Browser.THANKYOU);
+              }
+            }
           }
         }
       }
@@ -127,6 +148,7 @@ const HostDetailsForm = () => {
       console.log("something went wrong", e);
     }
   };
+
   if (isLoading) {
     return <Loader />;
   }

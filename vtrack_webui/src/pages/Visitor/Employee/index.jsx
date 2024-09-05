@@ -79,7 +79,13 @@ const EmployeeForm = () => {
       }
       const AccessToken = response.data.token;
       if (response.status === 200) {
-        dispatch(setVisitorType({ visitorName: payload.name, visitorType: visitorTypeData.visitorData.visitorType }));
+        dispatch(
+          setVisitorType({
+            visitorName: payload.name,
+            visitorPhone: payload.phone,
+            visitorType: visitorTypeData.visitorData.visitorType,
+          })
+        );
         dispatch(setAccessCardId({ accessCardId: formData.tempAccessCard }));
         navigate(Browser.HOSTDETAIL); // Adjust the path accordingly
       }

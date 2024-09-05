@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext_lazy as _
 from user.models import Address
 
 
@@ -99,24 +100,21 @@ class VisitorDetail(models.Model):
 
 class Valid(models.Model):
     """Valid Model"""
-    otp = models.CharField(gettext_lazy("otp"), max_length=50, blank=True, null=True)
-    is_valid = models.BooleanField(gettext_lazy("is_valid"), default=False, blank=True,
-                                   null=True)
-    visitor = models.OneToOneField(
-        VisitorDetail,
-        on_delete=models.DO_NOTHING,
-        verbose_name=gettext_lazy("visitor_id"),
-        related_name="valid")
-    created = models.DateTimeField(gettext_lazy("created"), auto_now_add=True)
-    updated = models.DateTimeField(gettext_lazy("updated"), auto_now=True)
+    otp = models.CharField(_('otp'), max_length=50, blank=True, null=True)
+    is_valid = models.BooleanField(_('is_valid'), default=False, blank=True, null=True)
+    email = models.EmailField(_('email'), blank=True, null=True)
+    created = models.DateTimeField(_('created'), auto_now_add=True)
+    updated = models.DateTimeField(_('updated'), auto_now=True)
 
     class Meta:
-        verbose_name = gettext_lazy("valid")
-        verbose_name_plural = gettext_lazy("valids")
+        verbose_name = _('valid')
+        verbose_name_plural = _('valids')
 
     def __str__(self):
-        return self.otp + ' - ' + str(self.visitor)
-
+        otp = self.otp or 'No OTP'
+        email = self.email or 'No email'
+        return f"{otp} - {email}"
+    
 
 class AccessCard(models.Model):
     """Access Card Model"""

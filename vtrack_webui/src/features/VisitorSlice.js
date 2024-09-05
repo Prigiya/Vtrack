@@ -5,6 +5,7 @@ const initialState = {
     visitorType: null,
     visitorId: null,
     visitorName:null,
+    visitorPhone:null,
     purposeOfVisit:null
   },
   AccessCardId: null,
@@ -24,6 +25,7 @@ const VisitorSlice = createSlice(
         state.visitorData.visitorType = action.payload.visitorType;
         state.visitorData.visitorId = action.payload.visitorId;
         state.visitorData.visitorName = action.payload.visitorName;
+        state.visitorData.visitorPhone = action.payload.visitorPhone;
         state.visitorData.purposeOfVisit = action.payload.purposeOfVisitId;
       },
       setAccessCardId: (state, action) => {

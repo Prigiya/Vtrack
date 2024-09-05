@@ -11,10 +11,7 @@ import {
   CategoryDropdown,
 } from "../../../components";
 import { setAccessCardId, setCategoryId } from "../../../features/VisitorSlice";
-import Axios from "../../../services/axios";
-import { API, Browser } from "../../../constants";
 import { useNavigate } from "react-router-dom";
-import { setVisitorType } from "../../../features/VisitorSlice";
 
 const ServiceProvider = () => {
   const [formData, setFormData] = useState({
@@ -31,10 +28,7 @@ const ServiceProvider = () => {
   const [submitted, setSubmitted] = useState(false);
   const Category = useCategory();
   const Access = useAccessCard();
-
   const dispatch = useAppDispatch();
-  const userData = useAppSelector((state) => state.auth);
-  const visitorTypeData = useAppSelector((state) => state.visitor);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,41 +42,16 @@ const ServiceProvider = () => {
       dispatch(setCategoryId({ categoryId: e.target.value }));
     }
 
-    // Clear validation errors only if the user is typing
+    // Clear validation errors while typing
     if (submitted) {
       setErrors({ ...errors, [e.target.name]: "" });
-
-      // Additional validations
-      switch (e.target.name) {
-        case "companyEmail":
-          validateEmail(e.target.value);
-          break;
-        case "phoneNumber":
-          validatePhoneNumber(e.target.value);
-          break;
-        default:
-          break;
-      }
     }
   };
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setErrors({ ...errors, companyEmail: "Invalid email address" });
-    }
-  };
+  const handleSubmit = () => {
+    setSubmitted(true);
 
-  const validatePhoneNumber = (phoneNo) => {
-    const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(phoneNo)) {
-      setErrors({ ...errors, phoneNumber: "Phone number must be 10 digits" });
-    }
-  };
-
-  const handleSubmit = async () => {
-    console.log("this is working handleSubmit--->");
-    // Basic validation
+    // Validation
     const newErrors = {};
     if (!formData.firstName.trim()) {
       newErrors.firstName = "First Name is required";
@@ -90,15 +59,8 @@ const ServiceProvider = () => {
     if (!formData.lastName.trim()) {
       newErrors.lastName = "Last Name is required";
     }
-    if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = "Phone Number is required";
-    } else {
-      validatePhoneNumber(formData.phoneNumber);
-    }
-    if (!formData.companyEmail.trim()) {
-      newErrors.companyEmail = "Company Email is required";
-    } else {
-      validateEmail(formData.companyEmail);
+    if (!formData.phoneNumber.trim() || !/^\d{10}$/.test(formData.phoneNumber.trim())) {
+      newErrors.phoneNumber = "Please enter a valid 10-digit phone number";
     }
     if (!formData.purposeOfVisit.trim()) {
       newErrors.purposeOfVisit = "Purpose of Visit is required";
@@ -106,57 +68,21 @@ const ServiceProvider = () => {
     if (!formData.meetingPerson.trim()) {
       newErrors.meetingPerson = "Meeting Person is required";
     }
-    if (
-      !formData.tempAccessCard.trim() ||
-      !/^\d{3}$/.test(formData.tempAccessCard.trim())
-    ) {
-      newErrors.tempAccessCard = "Temp Access Card must be 6 digits";
+    if (!formData.tempAccessCard.trim()) {
+      newErrors.tempAccessCard = "Temp Access Card is required";
     }
 
-
-    // If no errors, proceed to create a payload for the API
-    const payload = {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      phoneNumber: formData.phoneNumber,
-      // companyEmail: formData.companyEmail,
-      purposeOfVisit: formData.purposeOfVisit,
-      meetingPerson: formData.meetingPerson,
-      access_card: formData.tempAccessCard,
-    };
-    try {
-      const response = await Axios.patch(
-        `${API.V1.VISITOR_DETAILS}${userData.userId}/`,
-        payload
-      );
-      if (response.status === 401) {
-        console.log(response.data, "something went strongly wrong");
-      }
-      const AccessToken = response.data.token;
-      if (response.status === 200) {
-        dispatch(
-          setVisitorType({
-            visitorName: payload.name,
-            visitorType: visitorTypeData.visitorData.visitorType,
-          })
-        );
-        dispatch(setAccessCardId({ accessCardId: formData.tempAccessCard }));
-
-
-        navigate(Browser.HOSTDETAIL); // Adjust the path accordingly
-      }
-    } catch (error) {
-      console.log(error, "something went wrong while logging in");
+    // If there are errors, update the state and prevent navigation
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
     }
 
-    // Now you can use the 'payload' to send data to your API
-    console.log("API Payload:", payload);
+    // If no errors, proceed to navigate to the next page
+    dispatch(setAccessCardId({ accessCardId: formData.tempAccessCard }));
 
-    // Now you can use the 'payload' to send data to your API
-    console.log("API Payload:", payload);
-
-    setErrors({});
-    setSubmitted(true);
+    // Navigate to the next page
+    navigate("/host-details"); // Adjust the path accordingly
   };
 
   return (
@@ -167,10 +93,10 @@ const ServiceProvider = () => {
           <img
             src="../images/innova.png"
             alt="Company Logo"
-            className="h-7  w-auto"
+            className="h-7 w-auto"
           />
         </div>
-        <div className=" flex flex-col md:flex-col gap-4">
+        <div className="flex flex-col md:flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex flex-col mb-2 md:w-1/2">
               <label className="text-gray-700">First Name:*</label>
@@ -204,6 +130,7 @@ const ServiceProvider = () => {
               )}
             </div>
           </div>
+
           <div className="relative z-0 w-full mb-2 group flex flex-col">
             <label className="text-gray-700">Phone Number*:</label>
             <input
@@ -219,17 +146,7 @@ const ServiceProvider = () => {
               <p className="text-red-500">{errors.phoneNumber}</p>
             )}
           </div>
-          {/* <div className="relative z-0 w-full mb-2 group flex flex-col">
-            <label className="text-gray-700">Company Name:*</label>
-            <input
-              type="email"
-              name="companyEmail"
-              value={formData.companyEmail}
-              onChange={handleChange}
-              className={`border rounded-md p-2 ${errors.companyEmail ? "border-red-500" : ""}`}
-            />
-            {submitted && errors.companyEmail && <p className="text-red-500">{errors.companyEmail}</p>}
-          </div> */}
+
           <AccessCardSelect
             value={formData.tempAccessCard}
             onChange={handleChange}
@@ -238,6 +155,7 @@ const ServiceProvider = () => {
               submitted && errors.tempAccessCard ? errors.tempAccessCard : ""
             }
           />
+
           <CategoryDropdown
             formData={formData}
             errors={errors}
@@ -247,7 +165,7 @@ const ServiceProvider = () => {
         </div>
 
         <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 mb-2 w-full "
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 mb-2 w-full"
           onClick={handleSubmit}
         >
           Submit

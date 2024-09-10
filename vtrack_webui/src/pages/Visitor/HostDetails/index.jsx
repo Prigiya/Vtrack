@@ -1,14 +1,8 @@
-// src/components/HostDetailsForm.js
-
 import React, { useState } from "react";
-import Axios from "../../../services/axios";
-import { API, Browser } from "../../../constants";
 import { useNavigate } from "react-router-dom";
-import { CancelButton, Loader, NextButton } from "../../../components";
+import { CancelButton, NextButton } from "../../../components";
 import { MdOutlineCheckCircleOutline } from "react-icons/md";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { setAccessCardId, setApprovalId, setHostDetails, setVisitorType } from "../../../features/VisitorSlice";
-import { setLoggedIn } from "../../../features/authSlice";
+import { Browser } from "../../../constants";
 
 const HostDetailsForm = () => {
   const navigate = useNavigate();
@@ -18,15 +12,7 @@ const HostDetailsForm = () => {
     phone: "",
   });
 
-  const dispatch = useAppDispatch();
-  const userData = useAppSelector((state) => state.auth);
-  const visitorData = useAppSelector((state) => state.visitor);
-  console.log(visitorData,'this is visitordata--->')
-  const [isLoading, setIsLoading] = useState(false);
-  console.log(visitorData, "this is visitor Data-->");
-  console.log(userData, "this is userData--->");
   const [errors, setErrors] = useState({});
-
   const { name, email, phone } = formData;
 
   const handleChange = (e) => {
@@ -43,21 +29,17 @@ const HostDetailsForm = () => {
   };
 
   const validateEmail = () => {
-    // Add your custom email validation logic here
     const validSuffixes = ["innovasolutions.com", "acsicorp.com", "volt.com"];
-
     for (const suffix of validSuffixes) {
       if (email.endsWith(suffix)) {
         return true;
       }
     }
-
     return false;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true);
 
     const newErrors = {};
 
@@ -85,60 +67,13 @@ const HostDetailsForm = () => {
       return;
     }
 
-    const payload = {
-      name,
-      email,
-      phone,
-    };
-
-    try {
-      const response = await Axios.post(API.V1.HOST_DETAILS, payload);
-      const data = await response.data;
-      if (response.status === 201) {
-        dispatch(setHostDetails({ hostName: formData.name }));
-        const approvalPayload = {
-          access_card: visitorData?.AccessCardId,
-          purpose_of_visit: visitorData?.CategoryId,
-          visitor: userData.userId,
-          host: data.id,
-        };
-
-        const responseApproval = await Axios.post(API.V1.VISITOR_APPROVALS, approvalPayload);
-        if (responseApproval.status === 201) {
-          dispatch(setApprovalId({ approvalId: response.data.id }));
-          dispatch(setLoggedIn({ isApproved: true }));
-
-          const currentDate = new Date();
-          const isoTimestamp = currentDate.toISOString();
-
-          const timingPayload = {
-            approval: responseApproval.data.id,
-            check_in: isoTimestamp,
-          };
-          const responseTiming = await Axios.post(API.V1.TIMING_DETAILS, timingPayload);
-          if (responseTiming.status === 201) {
-            navigate(Browser.THANKYOU);
-          }
-        }
-      }
-      setIsLoading(false);
-    } catch (e) {
-      setIsLoading(false);
-      console.log("something went wrong", e);
-    }
+    // If no errors, navigate to the next page
+    navigate(Browser.THANKYOU); // Change this to the actual route of the next page
   };
-  if (isLoading) {
-    return <Loader />;
-  }
 
   return (
-    <div className=" relative flex flex-col items-center justify-center h-screen align-middle p-6 ">
-      {isLoading && (
-        <div className="fixed inset-0 z-50 bg-opacity-75 bg-gray-600 backdrop-blur-md flex items-center justify-center">
-          <Loader />
-        </div>
-      )}
-      <div className=" bg-white form-shadow p-10 rounded-2xl">
+    <div className="relative flex flex-col items-center justify-center h-screen align-middle p-6">
+      <div className="bg-white form-shadow p-10 rounded-2xl">
         <div className="flex justify-between gap-28">
           <h1 className="font-bold text-xl mb-6">Host Detail Form</h1>
           <img className="h-7 w-auto md:ml-auto" src="/images/innova.png" alt="company_logo" />

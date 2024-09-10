@@ -15,6 +15,7 @@ from visitor.serializers import (
     AccessCardSerializer,
     ApprovalSerializer,
     CategorySerializer,
+    EmailRecordSerializer,
     HostSerializer,
     NIDTypeSerializer,
     TimingSerializer,
@@ -113,7 +114,63 @@ class ValidViewSet(viewsets.ModelViewSet):
 
     queryset = Valid.objects.all()
     serializer_class = ValidSerializer
+    
 
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+
+class ValidOtpViewSet(viewsets.ModelViewSet):
+    
+    queryset = Valid.objects.all()
+    
+    serializer_class = EmailRecordSerializer
+    def get_serializer_class(self):
+        if self.action == "POST":
+            return EmailRecordSerializer
+        else:
+            return ValidSerializer
+        
+    def create(self, request):
+        email_serializer = EmailRecordSerializer(data=request.data)
+        if email_serializer.is_valid():
+            email = email_serializer.validated_data['email']
+            otp = get_random_string(length=6, allowed_chars='0123456789')
+            # Valid.objects.create(email=email, otp=otp)
+            valid_record = Valid.objects.create(email=email, otp=otp)
+
+            valid_id = valid_record.id
+            send_mail(
+                'Your OTP Code',
+                f'Your OTP code is {otp}',
+                'Vtrack@innovasolutions.com',
+                [email],
+                fail_silently=False,
+            )
+            return Response({'message': 'OTP sent to email', 'valid_id': valid_id}, status=status.HTTP_200_OK)
+        return Response(email_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
+    def update(self, request, pk=None, partial=False):
+        otp_serializer = ValidSerializer(data=request.data, partial=partial)
+        if otp_serializer.is_valid():
+            email = otp_serializer.validated_data.get('email')
+            otp = otp_serializer.validated_data.get('otp')
+            
+            try:
+                # Get the record by id (pk) and update email and otp
+                otp_record = Valid.objects.get(pk=pk)
+                if email is not None:
+                    otp_record.email = email
+                if otp is not None:
+                    otp_record.otp = otp
+                otp_record.save()
+
+                return Response({'message': 'OTP updated successfully'}, status=status.HTTP_200_OK)
+            except Valid.DoesNotExist:
+                return Response({'error': 'Record with the given id does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(otp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CheckoutViewSet(generics.ListAPIView):
     """Check out View Set"""
@@ -143,7 +200,6 @@ class AuditVisitorView(generics.ListAPIView):
     renderer_classes = [CSVRenderer]
 
     def get_queryset(self):
-        # media_root = urljoin(self.request.build_absolute_uri("/"), settings.MEDIA_URL)
         raw_query = f"""
         Select vd.name as visitor_name, 
         phone, 
@@ -162,14 +218,6 @@ class AuditVisitorView(generics.ListAPIView):
         inner join visitor_timing vt on vt.approval_id = va.id
         inner join visitor_purposeofvisit on vp on vt.id = va.purpose_of_visit_id
         """
-        # serializer = self.query_serializer(data=self.request.query_params)
-        # serializer.is_valid(raise_exception=True)
-        # params = (
-        #     serializer.validated_data["from_datetime"],
-        #     serializer.validated_data["to_datetime"],
-        #     self.request.user.id,
-        # )
-
         with connection.cursor() as cursor:
             cursor.execute(raw_query)
             columns = tuple(desc[0] for desc in cursor.description)

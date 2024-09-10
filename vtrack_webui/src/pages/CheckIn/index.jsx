@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../../hooks/index";
 import { setEmailAddress, setLoggedIn } from "../../features/authSlice";
 import { setVisitorType } from "../../features/VisitorSlice";
+import { setValidType } from "../../features/validSlice";
 import { useSelector } from "react-redux";
 import { NextButton, StepProgressBar } from "../../components";
 import { MdOutlineCheckCircleOutline } from "react-icons/md";
@@ -26,6 +27,7 @@ const CheckIn = () => {
   const dispatch = useAppDispatch();
   const userData = useAppSelector((state) => state.auth);
   const visitorTypeData = useSelector((state) => state.visitor);
+  const validTypeData = useSelector((state) => state.valid);
 
   const handleEmailChange = (e) => {
     const input = e.target.value.trim(); // Trim whitespace
@@ -35,7 +37,7 @@ const CheckIn = () => {
 
     setIsFormDirty(true);
 
-    // Simple email validation (replace with a more robust solution if needed)
+   
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(input)) {
       setEmailError("Please enter a valid email address.");
@@ -61,25 +63,31 @@ const CheckIn = () => {
   };
 
   const handleSendOtp = async () => {
+    console.log("handleSendOtp is being executed"); 
     try {
-      const response = await Axios.post(API.V1.VISITOR_DETAILS, Email_Payload);
+      const response = await Axios.post(API.V1.VISITOR_VALIDS, Email_Payload);
+      console.log("API Response:", response); 
       if (response.status === 400) {
         toast.error("something went wrong while sending OTP");
       }
       const AccessToken = response.data.token;
-      if (response.status === 201) {
+      if  (response.status === 201 || response.status === 200) {
+        // const payload = {
+        //   id: response.data.id,
+        // };
         const payload = {
-          visitorId: response.data.id,
-        };
+        id: response.data.valid_id,
+      };
+        console.log("Payload being dispatched:", payload);
         toast.success("OTP sent successfully! check your mail");
         setResponseReceived(true);
         dispatch(setLoggedIn({ isLoggedIn: true, userId: response.data.id }));
         setTimeout(() => {
-          setIsButtonDisabled(true); // Disable the button after sending OTP
+          setIsButtonDisabled(true); 
           setIsOtpSent(true);
-          setCountdown(20); // Reset the countdown
+          setCountdown(20); 
         }, 1000);
-        dispatch(setVisitorType(payload));
+        dispatch(setValidType(payload));
       }
     } catch (error) {
       toast.error("User is Already Inside");
@@ -90,7 +98,8 @@ const CheckIn = () => {
   };
 
   const handleCheckIn = () => {
-    Axios.patch(`${API.V1.VISITOR_VALIDS}${visitorTypeData.visitorData.visitorId}/`, OTP_Payload)
+    console.log("Valid Data..........", validTypeData)
+    Axios.patch(`${API.V1.VISITOR_VALIDS}${validTypeData.validData.id}/`, OTP_Payload)
       .then((response) => {
         if (response.status === 400) {
           toast.error("Validation failed. Please fix errors");

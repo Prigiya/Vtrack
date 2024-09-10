@@ -29,7 +29,6 @@ const NidForm = () => {
   // Ensure form is marked dirty when the user selects an NID type or uploads/captures an image
   useEffect(() => {
     if (nidType) {
-
       setIsFormDirty(true);
     }
   }, [nidType]);
@@ -99,28 +98,28 @@ const NidForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
-    formData.append("nid_type", nidType); 
+    formData.append("nid_type", nidType);
     formData.append("national_id", nidImageRaw);
     dispatch(setUserNidData({ nidType, nidImageRaw }));
 
-    console.log(nidType, "this is nid_type");
-
-    const config = {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    };
-
-    try {
-      const response = await Axios.patch(`${API.V1.VISITOR_DETAILS}${userData.userId}/`, formData, config);
-      if (response.status === 200) {
-        navigate("/visitor");
-      }
-    } catch (e) {
-      console.log("Something went wrong", e);
+    if (nidType != null && nidImageRaw != null) {
+      navigate("/visitor");
     }
+
+    // const config = {
+    //   headers: {
+    //     "Content-Type": "multipart/form-data",
+    //   },
+    // };
+    // try {
+    //   const response = await Axios.patch(`${API.V1.VISITOR_DETAILS}${userData.userId}/`, formData, config);
+    //   if (response.status === 200) {
+    //     navigate("/visitor");
+    //   }
+    // } catch (e) {
+    //   console.log("Something went wrong", e);
+    // }
   };
 
   return (

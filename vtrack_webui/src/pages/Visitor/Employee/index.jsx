@@ -1,15 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
-
-import { useAccessCard, useAppDispatch, useAuth } from "../../../hooks";
 import { CancelButton, NextButton } from "../../../components";
-import { API, Browser } from "../../../constants";
-import { useAppSelector } from "../../../hooks";
-import Axios from "../../../services/axios";
 import { MdOutlineCheckCircleOutline } from "react-icons/md";
-import { setAccessCardId } from "../../../features/VisitorSlice";
-import { setVisitorType } from "../../../features/VisitorSlice";
-
+import { toast } from "react-toastify"; // Assuming you're using react-toastify for toast messages
+import "react-toastify/dist/ReactToastify.css";
 import { AccessCardSelect } from "../../../components";
 
 const EmployeeForm = () => {
@@ -18,34 +12,18 @@ const EmployeeForm = () => {
     lastName: "",
     phoneNo: "",
     tempAccessCard: "",
-    meetingPerson: "",
   });
 
-  const Auth = useAuth();
-  const Access = useAccessCard();
-  const navigate = useNavigate();
-
-  const selector = useAppSelector((state) => state.media);
-  const visitorTypeData = useAppSelector((state) => state.visitor);
-  const userData = useAppSelector((state) => state.auth);
-  console.log(selector, "this is media data->");
-  const dispatch = useAppDispatch();
-
   const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: "" });
   };
 
-  useEffect(() => {
-    Access.getAccessCard();
-  }, []);
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitted(true);
 
     // Basic validation
     const newErrors = {};
@@ -62,36 +40,16 @@ const EmployeeForm = () => {
       newErrors.tempAccessCard = "Temp Access Card not selected";
     }
 
+    // Check if there are errors
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      // Display a toast message
+      toast.error("Please fill all the required fields correctly.");
       return;
     }
 
-    const payload = {
-      name: formData.firstName + " " + formData.lastName,
-      phone: formData.phoneNo,
-      access_card: formData.tempAccessCard,
-    };
-    try {
-      const response = await Axios.patch(`${API.V1.VISITOR_DETAILS}${userData.userId}/`, payload);
-      if (response.status === 401) {
-        console.log(response.data, "something went strongly wrong");
-      }
-      const AccessToken = response.data.token;
-      if (response.status === 200) {
-        dispatch(
-          setVisitorType({
-            visitorName: payload.name,
-            visitorPhone: payload.phone,
-            visitorType: visitorTypeData.visitorData.visitorType,
-          })
-        );
-        dispatch(setAccessCardId({ accessCardId: formData.tempAccessCard }));
-        navigate(Browser.HOSTDETAIL); // Adjust the path accordingly
-      }
-    } catch (error) {
-      console.log(error, "something went wrong while logging in");
-    }
+    // If form is valid, navigate to another page
+    navigate("/nextPage"); // Replace '/nextPage' with your actual route
   };
 
   return (
@@ -144,12 +102,12 @@ const EmployeeForm = () => {
             <AccessCardSelect
               value={formData.tempAccessCard}
               onChange={handleChange}
-              options={Access?.access || []}
-              error={submitted && errors.tempAccessCard ? errors.tempAccessCard : ""}
+              options={[]} // Update this if there are dynamic options
+              error={errors.tempAccessCard ? errors.tempAccessCard : ""}
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 mt-4">
             <CancelButton />
             <NextButton name={"Submit"} type={"submit"} icons={<MdOutlineCheckCircleOutline />} />
           </div>
